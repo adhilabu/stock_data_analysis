@@ -12,12 +12,3 @@ class StockDayAnalysisResponse(CamelModel):
     symbol: str
     analysis_date: date|None
     symbol_action: symbolActions = symbolActions.NEUTRAL
-
-    # @classmethod
-    # def get_response(cls):
-    #     response = {
-    #         'symbol': cls.symbol,
-    #         'analysis_date': cls.analysis_date,
-    #         'symbol_action': cls.symbol_action,
-    #     }
-    #     return response
