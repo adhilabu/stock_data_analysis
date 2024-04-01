@@ -1,27 +1,26 @@
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sklearn.metrics import precision_score
+from src.stock.schemas import FilterData, StockAnalysis
 
-from src.stock.schemas import StockDayAnalysisRequest, StockDayAnalysisResponse
-
-async def analyse_and_predict_symbol_data(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisResponse:
+async def analyse_and_predict_symbol_data(filter_data: FilterData, symbol_df: pd.DataFrame) -> StockAnalysis:
 
     model = RandomForestClassifier(n_estimators=100, min_samples_split=100, random_state=1)
 
-    train = symbol_df.iloc[:-100]
-    test = symbol_df.iloc[-100:]
+    offset = filter_data.offset
+    train = symbol_df.iloc[:-offset]
+    test = symbol_df.iloc[-offset:]
 
     predictors = ["Close", "Volume", "Open", "High", "Low"]
     model.fit(train[predictors], train["Target"])
-    # RandomForestClassifier(min_samples_split=100, random_state=1)
 
     preds = model.predict(test[predictors])
     preds = pd.Series(preds, index=test.index)
-    score = precision_score(test["Target"], preds)
-    response = StockDayAnalysisResponse
-    response.symbol = req.symbol
-    response.analysis_date = req.analysis_date
-    return response
+    
+    stock_analysis = StockAnalysis
+    stock_analysis.prediction_score = round(precision_score(test["Target"], preds), 3)
+    
+    return stock_analysis
 
 
 # async def predict(train, test, predictors, model):
