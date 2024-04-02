@@ -12,9 +12,12 @@ class StockDayAnalysisRequest(CamelModel):
     filter_data: FilterData|None
 
 class StockAnalysis(CamelModel):
-    precision_score: float
-    bt_precision_score: float
-    symbol_action: SymbolActions = SymbolActions.NEUTRAL
+    normal_precision_score: float
+    bt_precision_score_v1: float
+    bt_precision_score_v2: float
+    normal_symbol_action: SymbolActions = SymbolActions.NEUTRAL
+    bt_v1_symbol_action: SymbolActions = SymbolActions.NEUTRAL
+    bt_v2_symbol_action: SymbolActions = SymbolActions.NEUTRAL
 
 class StockDayAnalysisResponse(CamelModel):
     symbol: str

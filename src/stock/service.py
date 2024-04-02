@@ -4,7 +4,7 @@ from src.stock.ml_service import analyse_and_predict_symbol_data
 from datetime import datetime, timedelta, date
 
 
-async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> pd.DataFrame:
+async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
     
     analysis_date = req.analysis_date
     analysis_date: date = analysis_date - timedelta(days=1)
@@ -16,7 +16,7 @@ async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame
         start_date = start_date.strftime('%Y-%m-%d')
         symbol_df = symbol_df[(symbol_df.index >= start_date)]
     
-    return symbol_df
+    return symbol_df, analysis_date
 
 async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisResponse:
     symbol_df.index = pd.to_datetime(symbol_df.index)
@@ -24,7 +24,7 @@ async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFram
     del symbol_df["Stock Splits"]
     
     filter_data = req.filter_data
-    symbol_df = await filter_symbol_df(req, symbol_df)
+    symbol_df, analysis_date = await filter_symbol_df(req, symbol_df)
 
     symbol_df["Tomorrow"] = symbol_df["Close"].shift(-1)
     symbol_df["Target"] = (symbol_df["Tomorrow"] > symbol_df["Close"]).astype(int)
@@ -32,5 +32,5 @@ async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFram
     response = StockDayAnalysisResponse
     response.symbol = req.symbol
     response.analysis_date = req.analysis_date
-    response.stock_analysis = await analyse_and_predict_symbol_data(filter_data, symbol_df)
+    response.stock_analysis = await analyse_and_predict_symbol_data(analysis_date, filter_data, symbol_df)
     return response
