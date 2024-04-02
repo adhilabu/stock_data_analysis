@@ -7,3 +7,7 @@ class SymbolActions(Enum):
     BUY = 'buy'
     SELL = 'sell'
     NEUTRAL = 'neutral'
+
+class PredictionType(Enum):
+    V1 = 'v1'
+    V2 = 'v2'
