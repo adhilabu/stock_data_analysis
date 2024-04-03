@@ -66,3 +66,10 @@ The endpoint returns a JSON response with the following structure:
   - BtV1SymbolAction: Action recommendation based on analysis version 1 (e.g., "buy", "sell", "neutral").
   - BtV2SymbolAction: Action recommendation based on analysis version 2 (e.g., "buy", "sell", "neutral").
 
+## Installation
+
+- To install the required dependencies for this project, run the following command:
+
+```console
+pip install -r requirements.txt
+```
