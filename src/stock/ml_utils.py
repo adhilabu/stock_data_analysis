@@ -5,7 +5,9 @@ from src.stock.constants import SymbolActions
 async def get_stock_movt_prediction_from_analysis_data(
     analysis_data: int,
 ) -> SymbolActions:
-    
+    """
+    method to fetch action based on the analysis data
+    """
     match(analysis_data):
         case 0:
             symbol_action = SymbolActions.SELL

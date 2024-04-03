@@ -1,18 +1,18 @@
 import pandas as pd
 
 def get_rounded_value(
-        value: float,
-        decimal_place: int = 2
-    ) -> float:
+    value: float,
+    decimal_place: int = 2
+) -> float:
     """
     method to fetch rounded value with default decimal place as two.
     """
     return round(value, decimal_place)
 
 def get_start_and_step_from_df(
-        df: pd.DataFrame,
-        divisor: int = 10,
-    ) -> tuple[int, int]:
+    df: pd.DataFrame,
+    divisor: int = 10,
+) -> tuple[int, int]:
     """
     method to fetch start and step for the pandas dataframe.
     """

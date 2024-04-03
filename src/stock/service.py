@@ -3,7 +3,9 @@ from src.stock.schemas import StockDayAnalysisRequest, StockDayAnalysisResponse,
 from src.stock.ml_service import analyse_and_predict_symbol_data
 
 async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> pd.DataFrame:
-    
+    """
+    method to filter symbol dataframe based on the filter data
+    """
     analysis_date = req.analysis_date
     analysis_date = analysis_date.strftime('%Y-%m-%d')
     symbol_df = symbol_df[(symbol_df.index < analysis_date)]
@@ -23,6 +25,9 @@ async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame
     return symbol_df
 
 async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisResponse:
+    """
+    method to filter symbol dataframe and create stock analysis response
+    """
     symbol_df.index = pd.to_datetime(symbol_df.index)
     del symbol_df["Dividends"]
     del symbol_df["Stock Splits"]

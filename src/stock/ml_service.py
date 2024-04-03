@@ -10,6 +10,10 @@ async def analyse_and_predict_symbol_data(
     filter_data: FilterData,
     symbol_df: pd.DataFrame
 ) -> StockAnalysis:
+    
+    """
+    main method to analyse and calculate the stock movement in different predictor cases.
+    """
 
     stock_analysis = StockAnalysis
     model = RandomForestClassifier(n_estimators=100, min_samples_split=100, random_state=1)
@@ -19,6 +23,7 @@ async def analyse_and_predict_symbol_data(
     train = symbol_df.iloc[:-offset]
     test = symbol_df.iloc[-offset:]
 
+    # predictor list for normal prediction of input symbol
     predictors = ["Close", "Volume", "Open", "High", "Low"]
     model.fit(train[predictors], train["Target"])
 
@@ -28,12 +33,14 @@ async def analyse_and_predict_symbol_data(
     stock_analysis.normal_precision_score = get_rounded_value(precision_score(test["Target"], preds))
     stock_analysis.normal_symbol_action = await get_stock_movt_prediction_from_analysis_data(preds.iloc[-1])
 
+    # back test prediction V1 for input symbol
     bt_predictions_v1: pd.DataFrame = await backtest(data=symbol_df, predictors=predictors, p=PredictionType.V1, start=start, step=step)
     
     if bt_predictions_v1 is not None:
         stock_analysis.bt_precision_score_v1 = get_rounded_value(precision_score(bt_predictions_v1["Target"], bt_predictions_v1["Predictions"]))
         stock_analysis.bt_v1_symbol_action = await get_stock_movt_prediction_from_analysis_data(bt_predictions_v1.iloc[-1]['Predictions'])
 
+    # back test prediction V2 for input symbol
     bt_predictions_v2: pd.DataFrame = await backtest(data=symbol_df, predictors=predictors, p=PredictionType.V2, start=start, step=step)
     if bt_predictions_v2 is not None:
         stock_analysis.bt_precision_score_v2 = get_rounded_value(precision_score(bt_predictions_v2["Target"], bt_predictions_v2["Predictions"]))
@@ -47,17 +54,21 @@ async def predict(
     predictors: list,
     model: RandomForestClassifier
 ) -> pd.DataFrame:
-    
+    """
+    predict method for V1
+    """
     model.fit(train[predictors], train["Target"])
     preds = model.predict(test[predictors])
     preds = pd.Series(preds, index=test.index, name="Predictions")
     combined = pd.concat([test["Target"], preds], axis=1)
     return combined
 
-async def get_model_and_set_for_v2(
+async def get_dataframe_and_predictor_for_v2(
     data: pd.DataFrame
 ) -> tuple[pd.DataFrame, list]:
-
+    """
+    method to fetch 
+    """
     max_horizon = data.shape[0]  # Limit max horizon to half the data length and 1000 (adjustable)
     horizons = [h for h in [2, 5, 60, 250, 1000] if 2 * h <= max_horizon]  # Select horizons less than or equal to half of max_horizon
     new_predictors = []
@@ -84,6 +95,9 @@ async def predict_v2(
     predictors: list,
     model: RandomForestClassifier,
 ) -> pd.DataFrame:
+    """
+    predict method for V2
+    """
     model.fit(train[predictors], train["Target"])
     preds = model.predict_proba(test[predictors])[:,1]
     preds[preds >=.6] = 1
@@ -99,9 +113,11 @@ async def backtest(
     start: int = 100,
     step: int = 10
 ) -> pd.DataFrame|None:
-
+    """
+    method to backtest the dataframe with by dividing the dataframe to steps
+    """
     if p == PredictionType.V2:
-        data, predictors = await get_model_and_set_for_v2(data=data)
+        data, predictors = await get_dataframe_and_predictor_for_v2(data=data)
         model = RandomForestClassifier(n_estimators=200, min_samples_split=50, random_state=1)
     else:
         model = RandomForestClassifier(n_estimators=100, min_samples_split=100, random_state=1)
