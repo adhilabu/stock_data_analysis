@@ -12,12 +12,15 @@ class StockDayAnalysisRequest(CamelModel):
     filter_data: FilterData|None
 
 class StockAnalysis(CamelModel):
-    normal_precision_score: float
-    bt_precision_score_v1: float
-    bt_precision_score_v2: float
+    normal_precision_score: float = 0.0
+    bt_precision_score_v1: float = 0.0
+    bt_precision_score_v2: float = 0.0
     normal_symbol_action: SymbolActions = SymbolActions.NEUTRAL
     bt_v1_symbol_action: SymbolActions = SymbolActions.NEUTRAL
     bt_v2_symbol_action: SymbolActions = SymbolActions.NEUTRAL
+    
+    class Config:  
+        use_enum_values = True
 
 class StockDayAnalysisResponse(CamelModel):
     symbol: str

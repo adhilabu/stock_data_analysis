@@ -1,13 +1,10 @@
 import pandas as pd
 from src.stock.schemas import StockDayAnalysisRequest, StockDayAnalysisResponse, FilterData
 from src.stock.ml_service import analyse_and_predict_symbol_data
-from datetime import datetime, timedelta, date
 
-
-async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> tuple[pd.DataFrame, str]:
+async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> pd.DataFrame:
     
     analysis_date = req.analysis_date
-    analysis_date: date = analysis_date - timedelta(days=1)
     analysis_date = analysis_date.strftime('%Y-%m-%d')
     symbol_df = symbol_df[(symbol_df.index < analysis_date)]
 
@@ -15,8 +12,15 @@ async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame
     if start_date:
         start_date = start_date.strftime('%Y-%m-%d')
         symbol_df = symbol_df[(symbol_df.index >= start_date)]
-    
-    return symbol_df, analysis_date
+
+    # Add a new row with the index as analysis_date and set all other values to null
+    analysis_date_obj = pd.to_datetime(analysis_date).tz_localize('Asia/Kolkata')
+    new_row = pd.DataFrame(index=[analysis_date_obj], columns=symbol_df.columns)
+    new_row['Open'] = symbol_df.iloc[-1]['Close']
+    new_row = new_row.infer_objects(copy=False)  # Inference to downcast object types
+    symbol_df = pd.concat([symbol_df, new_row])
+
+    return symbol_df
 
 async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisResponse:
     symbol_df.index = pd.to_datetime(symbol_df.index)
@@ -24,7 +28,7 @@ async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFram
     del symbol_df["Stock Splits"]
     
     filter_data = req.filter_data
-    symbol_df, analysis_date = await filter_symbol_df(req, symbol_df)
+    symbol_df = await filter_symbol_df(req, symbol_df)
 
     symbol_df["Tomorrow"] = symbol_df["Close"].shift(-1)
     symbol_df["Target"] = (symbol_df["Tomorrow"] > symbol_df["Close"]).astype(int)
@@ -32,5 +36,5 @@ async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFram
     response = StockDayAnalysisResponse
     response.symbol = req.symbol
     response.analysis_date = req.analysis_date
-    response.stock_analysis = await analyse_and_predict_symbol_data(analysis_date, filter_data, symbol_df)
+    response.stock_analysis = await analyse_and_predict_symbol_data(filter_data, symbol_df)
     return response

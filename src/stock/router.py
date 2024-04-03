@@ -15,9 +15,8 @@ stock_app = APIRouter(
 @stock_app.post("/symbol/day/", response_model=StockDayAnalysisResponse)
 async def get_symbol_analysis_for_next_day(req: StockDayAnalysisRequest):
     symbol = req.symbol
-    analysis_date = req.analysis_date if req.analysis_date else dt.today()
-    analysis_date_str = analysis_date.strftime('%d_%m_%Y')
-    file_name = f'{symbol}_{analysis_date_str}.csv'
+    today_str = dt.today().strftime('%d_%m_%Y')
+    file_name = f'temp/{symbol}_{today_str}.csv'
     if os.path.exists(file_name):
         symbol_df = pd.read_csv(file_name, index_col=0)
     else:
