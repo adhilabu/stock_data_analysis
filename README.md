@@ -57,7 +57,7 @@ The endpoint returns a JSON response with the following structure:
 ```
 
 - Symbol: The stock symbol for which the analysis was performed.
-- AnalysisDate: The date on which the analysis was performed.
+- AnalysisDate: The date on which the analysis was performed. The AnalysisDate should be set to the maximum date up to the next day.
   - StockAnalysis: Analysis results with the following metrics:
   - NormalPrecisionScore: Precision score for normal analysis.
   - BtPrecisionScoreV1: Precision score for analysis version 1.
