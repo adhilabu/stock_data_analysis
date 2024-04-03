@@ -73,3 +73,10 @@ The endpoint returns a JSON response with the following structure:
 ```console
 pip install -r requirements.txt
 ```
+
+## Resources
+
+- Special thanks to the tutorials and resources that contributed to the development of this project!
+- Special thanks to dataquest tutorials on stock market data anaylsis.
+
+`https://www.youtube.com/@Dataquestio`
