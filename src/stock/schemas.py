@@ -26,3 +26,6 @@ class StockDayAnalysisResponse(CamelModel):
     symbol: str
     analysis_date: date|None
     stock_analysis: StockAnalysis
+
+class AllSymbolsResponse(CamelModel):
+    symbols_map: dict = {}
