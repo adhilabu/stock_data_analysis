@@ -28,4 +28,4 @@ class StockDayAnalysisResponse(CamelModel):
     stock_analysis: StockAnalysis
 
 class AllSymbolsResponse(CamelModel):
-    symbols_map: dict = {}
+    symbols_map: list = []

@@ -95,6 +95,8 @@ def get_ticks(
     }
     
     symbols_map.update(extras)
+    symbols_map = [{"name": value, "value": key} for key, value in symbols_map.items()]
+    symbols_map = sorted(symbols_map, key=lambda x: x['name'])
     all_symbols_response = AllSymbolsResponse(
         symbols_map=symbols_map
     )
