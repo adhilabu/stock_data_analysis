@@ -1,0 +1,11 @@
+{
+  "name": "stock_data_analysis",
+  "version": "1.0.0",
+  "description": "This project leverages machine learning techniques to analyze and predict stock movements based on historical data. It includes functionalities for data analysis, predictive modeling, and backtesting to evaluate the effectiveness of the predictive models.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
