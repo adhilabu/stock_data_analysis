@@ -1,8 +1,9 @@
 import pandas as pd
-from src.stock.schemas import AllSymbolsResponse, StockDayAnalysisRequest, StockDayAnalysisResponse, FilterData
-from src.stock.ml_service import analyse_and_predict_symbol_data
+from src.stock.schemas import AllSymbolsResponse, StockDayAnalysisRequest, StockDayAnalysisResponse, FilterData, StockDayAnalysisV3Response
+from src.stock.ml_service import analyse_and_predict_symbol_data, analyze_and_predict_v3
 import os
 import requests
+import numpy as np
 
 async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -45,6 +46,34 @@ async def analyze_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFram
     response.analysis_date = req.analysis_date
     response.stock_analysis = await analyse_and_predict_symbol_data(filter_data, symbol_df)
     return response
+
+
+async def analyze_symbol_df_v3(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisV3Response:
+    """
+    v2 method to filter symbol dataframe and create stock analysis response
+    """
+    # Create features
+    symbol_df['MA50'] = symbol_df['Close'].rolling(window=50).mean()
+    symbol_df['MA200'] = symbol_df['Close'].rolling(window=200).mean()
+    symbol_df['Volume_Change'] = symbol_df['Volume'].pct_change()
+
+    # Drop rows with NaN values
+    symbol_df.dropna(inplace=True)
+
+    # Create labels (1 for up, 0 for down)
+    symbol_df['Price_Trend'] = np.where(symbol_df['Close'].shift(-1) > symbol_df['Close'], 1, 0)
+
+    # Select features and labels
+    features = symbol_df[['MA50', 'MA200', 'Volume_Change']]
+    labels = symbol_df['Price_Trend']
+    accuracy = await analyze_and_predict_v3(features, labels)
+    response = StockDayAnalysisV3Response(
+        symbol=req.symbol,
+        analysis_date=req.analysis_date,
+        accuracy=accuracy
+    )
+    return response
+
 
 def get_ticks(
 ) -> AllSymbolsResponse:
@@ -101,3 +130,31 @@ def get_ticks(
         symbols_map=symbols_map
     )
     return all_symbols_response
+
+
+async def analyze_options(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisV3Response:
+    """
+    v2 method to filter symbol dataframe and create stock analysis response
+    """
+    # Create features
+    symbol_df['MA50'] = symbol_df['Close'].rolling(window=50).mean()
+    symbol_df['MA200'] = symbol_df['Close'].rolling(window=200).mean()
+    symbol_df['Volume_Change'] = symbol_df['Volume'].pct_change()
+
+    # Drop rows with NaN values
+    symbol_df.dropna(inplace=True)
+
+    # Create labels (1 for up, 0 for down)
+    symbol_df['Price_Trend'] = np.where(symbol_df['Close'].shift(-1) > symbol_df['Close'], 1, 0)
+
+    # Select features and labels
+    features = symbol_df[['MA50', 'MA200', 'Volume_Change']]
+    labels = symbol_df['Price_Trend']
+    accuracy = await analyze_and_predict_v3(features, labels)
+    response = StockDayAnalysisV3Response(
+        symbol=req.symbol,
+        analysis_date=req.analysis_date,
+        accuracy=accuracy
+    )
+    return response
+

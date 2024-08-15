@@ -29,3 +29,11 @@ class StockDayAnalysisResponse(CamelModel):
 
 class AllSymbolsResponse(CamelModel):
     symbols_map: list = []
+
+class StockDayAnalysisV3Response(CamelModel):
+    symbol: str
+    analysis_date: date|None
+    accuracy: float
+
+class StockDayAnalysisOptionRequest(CamelModel):
+    symbol: str
