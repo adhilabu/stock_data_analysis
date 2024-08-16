@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./src/schemas"
+    ],
+    "python.defaultInterpreterPath": "/usr/bin/python3.10",
+}
