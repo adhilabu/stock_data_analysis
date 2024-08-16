@@ -60,3 +60,7 @@ async def get_symbol_analysis_for_next_day(req: StockDayAnalysisOptionRequest):
     print("\nPuts:\n", puts)
 
     return None
+
+@stock_app.get("/ws/", response_model=AllSymbolsResponse)
+async def get_all_symbols():
+    return get_ticks()
