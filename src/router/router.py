@@ -3,8 +3,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 import pandas as pd
 import yfinance as yf
-from src.stock.service import analyze_symbol_df, analyze_symbol_df_v3, get_ticks
-from src.stock.schemas import AllSymbolsResponse, StockDayAnalysisOptionRequest, StockDayAnalysisRequest, StockDayAnalysisResponse, StockDayAnalysisV3Response
+from src.service.service import analyze_symbol_df, analyze_symbol_df_v3, get_ticks
+from src.schemas.schemas import AllSymbolsResponse, StockDayAnalysisOptionRequest, StockDayAnalysisRequest, StockDayAnalysisResponse, StockDayAnalysisV3Response
 import os
 
 stock_app = APIRouter(

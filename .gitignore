@@ -2,5 +2,6 @@
 *.csv
 /venv/*
 /node_modules/*
-/node_modules/autopreview/*
-/protoc-28.0-rc-2-linux-x86_64/*
+/protoc-28.0-rc-2-win64/*
+env.sh
+.env

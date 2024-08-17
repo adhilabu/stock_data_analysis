@@ -1,10 +1,10 @@
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sklearn.metrics import precision_score
-from src.stock.schemas import FilterData, StockAnalysis
-from src.stock.utils import get_rounded_value, get_start_and_step_from_df
-from src.stock.ml_utils import get_stock_movt_prediction_from_analysis_data
-from src.stock.constants import PredictionType
+from src.schemas.schemas import FilterData, StockAnalysis
+from src.utils.utils import get_rounded_value, get_start_and_step_from_df
+from src.ml.ml_utils import get_stock_movt_prediction_from_analysis_data
+from src.schemas.constants import PredictionType
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler

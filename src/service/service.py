@@ -1,6 +1,6 @@
 import pandas as pd
-from src.stock.schemas import AllSymbolsResponse, StockDayAnalysisRequest, StockDayAnalysisResponse, FilterData, StockDayAnalysisV3Response
-from src.stock.ml_service import analyse_and_predict_symbol_data, analyze_and_predict_v3
+from src.schemas.schemas import AllSymbolsResponse, StockDayAnalysisRequest, StockDayAnalysisResponse, FilterData, StockDayAnalysisV3Response
+from src.ml.ml_service import analyse_and_predict_symbol_data, analyze_and_predict_v3
 import os
 import requests
 import numpy as np
