@@ -1,10 +1,15 @@
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 from sklearn.metrics import precision_score
-from src.stock.schemas import FilterData, StockAnalysis
-from src.stock.utils import get_rounded_value, get_start_and_step_from_df
-from src.stock.ml_utils import get_stock_movt_prediction_from_analysis_data
-from src.stock.constants import PredictionType
+from src.schemas.schemas import FilterData, StockAnalysis
+from src.utils.utils import get_rounded_value, get_start_and_step_from_df
+from src.ml.ml_utils import get_stock_movt_prediction_from_analysis_data
+from src.schemas.constants import PredictionType
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
+import yfinance as yf
 
 async def analyse_and_predict_symbol_data(
     filter_data: FilterData,
@@ -147,3 +152,22 @@ async def backtest(
 
     return pd.concat(all_predictions)
 
+
+async def analyze_and_predict_v3(features: pd.DataFrame, labels: pd.DataFrame) -> float:
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+    # Standardize the features
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+    # Initialize and train the model
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train_scaled, y_train)
+
+    # Make predictions
+    y_pred = model.predict(X_test_scaled)
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f'Model Accuracy: {accuracy:.2f}')
+    return accuracy

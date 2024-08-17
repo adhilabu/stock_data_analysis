@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.stock.constants import SymbolActions
+from src.schemas.constants import SymbolActions
 
 async def get_stock_movt_prediction_from_analysis_data(
     analysis_data: int,
