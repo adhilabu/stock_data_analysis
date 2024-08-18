@@ -1,10 +1,10 @@
 from datetime import date as dt
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
 import pandas as pd
 import yfinance as yf
+from src.analysis.stock_positions import find_support_resistance, get_stock_levels_context_details
 from src.service.service import analyze_symbol_df, analyze_symbol_df_v3, get_ticks
-from src.schemas.schemas import AllSymbolsResponse, StockDayAnalysisOptionRequest, StockDayAnalysisRequest, StockDayAnalysisResponse, StockDayAnalysisV3Response
+from src.schemas.schemas import AllSymbolsResponse, FindSupportResistanceResponse, GetLevelsRequest, StockDayAnalysisOptionRequest, StockDayAnalysisRequest, StockDayAnalysisResponse, StockDayAnalysisV3Response, StockLevelsContext
 import os
 
 stock_app = APIRouter(
@@ -64,3 +64,13 @@ async def get_symbol_analysis_for_next_day(req: StockDayAnalysisOptionRequest):
 @stock_app.get("/ws/", response_model=AllSymbolsResponse)
 async def get_all_symbols():
     return get_ticks()
+
+@stock_app.post("/v1/get/stock/levels/", response_model=FindSupportResistanceResponse)
+async def get_stock_levels(request: GetLevelsRequest):
+    levels_data = find_support_resistance(request)
+    return levels_data
+
+@stock_app.get("/v1/get/stock/levels/", response_model=StockLevelsContext)
+async def get_stock_levels_context():
+    response = get_stock_levels_context_details()
+    return response

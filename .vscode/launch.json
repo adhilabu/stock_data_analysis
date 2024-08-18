@@ -14,6 +14,19 @@
                 "--reload"
             ],
             "jinja": true
-        }
+        },
+        {
+            "name": "Python: Debug stock_positions.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/analysis/stock_positions.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "cwd": "${workspaceFolder}/src/analysis",
+            "env": {},
+            "args": [],
+            "envFile": "${workspaceFolder}/.env",
+            "django": false
+          }
     ]
 }

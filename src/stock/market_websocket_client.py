@@ -37,7 +37,7 @@ async def fetch_market_data():
     configuration = upstox_client.Configuration()
 
     api_version = '2.0'
-    configuration.access_token = os.getenv("ACCESS_TOKEN")
+    configuration.access_token = UPSTOX_ACCESS_TOKEN
 
     # Get market data feed authorization
     response = get_market_data_feed_authorize(
