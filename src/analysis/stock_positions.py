@@ -80,7 +80,9 @@ def find_support_resistance(request: GetLevelsRequest):
 
         def create_ranges(levels):
             def get_range_diff(value):
-                if value < 100:
+                if value < 50:
+                    return 2
+                elif value < 100:
                     return 5
                 elif value < 1000:
                     return 20
@@ -108,8 +110,8 @@ def find_support_resistance(request: GetLevelsRequest):
         support_range_counts = count_ranges(support_ranges)
         resistance_range_counts = count_ranges(resistance_ranges)
 
-        filtered_support_ranges = [r for r, count in support_range_counts.items() if count > request.accuracy]
-        filtered_resistance_ranges = [r for r, count in resistance_range_counts.items() if count > request.accuracy]
+        filtered_support_ranges = [r for r, count in support_range_counts.items() if count >= request.accuracy]
+        filtered_resistance_ranges = [r for r, count in resistance_range_counts.items() if count >= request.accuracy]
 
         try:
             prev_close = data['Close'].iloc[-2]
@@ -117,8 +119,8 @@ def find_support_resistance(request: GetLevelsRequest):
             continue  # Skip this symbol if there's not enough data to get the previous close price
 
         # Find specific support and resistance levels
-        support_level_details = next((level for level in support_levels if level['low'] <= prev_close <= level['high']), None)
-        resistance_level_details = next((level for level in resistance_levels if level['low'] <= prev_close <= level['high']), None)
+        support_level_details = next(((low, high) for (low, high) in filtered_support_ranges if low <= prev_close <= high), [])
+        resistance_level_details = next(((low, high) for (low, high) in filtered_resistance_ranges if low <= prev_close <= high), [])
         
         at_support = bool(support_level_details)
         at_resistance = bool(resistance_level_details)
@@ -134,10 +136,10 @@ def find_support_resistance(request: GetLevelsRequest):
                 resistance_count=sum(1 for low, high in filtered_resistance_ranges if low <= prev_close <= high),
                 is_support=bool(support_level_details),
                 is_resistance=bool(resistance_level_details),
-                support_low=round(support_level_details['low'], 2) if support_level_details else 0,
-                support_high=round(support_level_details['high'], 2) if support_level_details else 0,
-                resistance_low=round(resistance_level_details['low'], 2) if resistance_level_details else 0,
-                resistance_high=round(resistance_level_details['high'], 2) if resistance_level_details else 0
+                support_low=round(support_level_details[0], 2) if support_level_details else 0,
+                support_high=round(support_level_details[1], 2) if support_level_details else 0,
+                resistance_low=round(resistance_level_details[0], 2) if resistance_level_details else 0,
+                resistance_high=round(resistance_level_details[1], 2) if resistance_level_details else 0
             )
 
     return FindSupportResistanceResponse(results=results)
