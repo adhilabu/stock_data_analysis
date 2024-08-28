@@ -55,28 +55,35 @@ def find_support_resistance(request: GetLevelsRequest):
         data['Resistance'] = data['High'].rolling(window=20).max()
 
         # Determine decimal places based on the stock's closing prices
-        decimal_places = max(data['Close'].apply(lambda x: len(str(x).split('.')[1]) if '.' in str(x) else 0))
+        decimal_places = 2
 
         support_levels = []
         resistance_levels = []
 
-        for i in range(20, len(data)):
+        for i in range(20, len(data) - 2):  # Ensure we have enough data for the next two days
             current_support = data['Support'].iloc[i]
             current_resistance = data['Resistance'].iloc[i]
             low = data['Low'].iloc[i]
             high = data['High'].iloc[i]
-            close = data['Close'].iloc[i]
 
-            if low <= current_support <= close:
+            # Get the closing prices for the next two days
+            close_day_1 = data['Close'].iloc[i + 1]
+            close_day_2 = data['Close'].iloc[i + 2]
+
+            # Check if the support level is valid (both next two days' closes are above the current support)
+            if low <= current_support <= close_day_1 and low <= current_support <= close_day_2:
                 support_levels.append({
                     "low": round_to_nearest(current_support, decimal_places),
                     "high": round_to_nearest(high, decimal_places)
                 })
-            if high >= current_resistance >= close:
+
+            # Check if the resistance level is valid (both next two days' closes are below the current resistance)
+            if high >= current_resistance >= close_day_1 and high >= current_resistance >= close_day_2:
                 resistance_levels.append({
                     "low": round_to_nearest(low, decimal_places),
                     "high": round_to_nearest(current_resistance, decimal_places)
                 })
+
 
         def create_ranges(levels):
             def get_range_diff(value):
