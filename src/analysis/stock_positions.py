@@ -47,8 +47,8 @@ def find_support_resistance(request: GetLevelsRequest):
             if not data.empty:
                 data.to_csv(temp_file)
 
-        if data.empty or len(data) < 2:
-            continue  # Skip this symbol if data is empty or has fewer than 2 rows
+        if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
+            continue  # Skip this symbol
 
         # Calculate support and resistance levels
         data['Support'] = data['Low'].rolling(window=20).min()
