@@ -19,6 +19,7 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:3000",
+    "http://www.aksyo.in"
 ]
 
 app.add_middleware(
@@ -73,6 +74,11 @@ async def callback(code: str):
 @app.get("/hello")
 async def hello():
     return {"message": "Hello trader"}
+
+
+@app.get("/")
+async def forecast_message():
+    return "Forecasting Soon ..."
 
 def update_env_sh(file_path: str, access_token: str):
     # Read the existing content of the file

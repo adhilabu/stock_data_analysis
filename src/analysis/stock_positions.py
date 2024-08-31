@@ -50,6 +50,14 @@ def find_support_resistance(request: GetLevelsRequest):
         if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
             continue  # Skip this symbol
 
+        # # Calculate percentage movement over a rolling window of 15 trading days
+        # data['Pct_Change'] = data['Close'].pct_change(periods=15) * 100
+
+        # # Check if the maximum percentage movement within 15 days exceeds 10%
+        # max_pct_change = data['Pct_Change'].abs().max()
+        # if max_pct_change <= 10:
+        #     continue  # Skip this symbol if the movement is not significant
+
         # Calculate support and resistance levels
         data['Support'] = data['Low'].rolling(window=20).min()
         data['Resistance'] = data['High'].rolling(window=20).max()
