@@ -95,16 +95,10 @@ def find_support_resistance(request: GetLevelsRequest):
 
         def create_ranges(levels):
             def get_range_diff(value):
-                if value < 50:
-                    return 2
-                elif value < 100:
-                    return 5
-                elif value < 1000:
-                    return 20
-                elif value < 10000:
-                    return 50
-                else:
-                    return 100
+                base_diff = 2
+                increment_per_50 = 0.04  # Define how much the range should increase per 50-point increase in value
+                multiplier = value // 50
+                return base_diff + (increment_per_50 * multiplier * 50)
 
             ranges = []
             for level in levels:
