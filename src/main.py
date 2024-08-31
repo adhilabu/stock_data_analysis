@@ -19,7 +19,11 @@ origins = [
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:3000",
-    "http://www.aksyo.in"
+    "http://www.aksyo.in",
+    "https://localhost",
+    "https://localhost:8080",
+    "https://localhost:3000",
+    "https://www.aksyo.in"
 ]
 
 app.add_middleware(
