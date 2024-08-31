@@ -50,6 +50,14 @@ def find_support_resistance(request: GetLevelsRequest):
         if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
             continue  # Skip this symbol
 
+        # # Calculate percentage movement over a rolling window of 15 trading days
+        # data['Pct_Change'] = data['Close'].pct_change(periods=15) * 100
+
+        # # Check if the maximum percentage movement within 15 days exceeds 10%
+        # max_pct_change = data['Pct_Change'].abs().max()
+        # if max_pct_change <= 10:
+        #     continue  # Skip this symbol if the movement is not significant
+
         # Calculate support and resistance levels
         data['Support'] = data['Low'].rolling(window=20).min()
         data['Resistance'] = data['High'].rolling(window=20).max()
@@ -87,16 +95,10 @@ def find_support_resistance(request: GetLevelsRequest):
 
         def create_ranges(levels):
             def get_range_diff(value):
-                if value < 50:
-                    return 2
-                elif value < 100:
-                    return 5
-                elif value < 1000:
-                    return 20
-                elif value < 10000:
-                    return 50
-                else:
-                    return 100
+                base_diff = 2
+                increment_per_50 = 0.04  # Define how much the range should increase per 50-point increase in value
+                multiplier = value // 50
+                return base_diff + (increment_per_50 * multiplier * 50)
 
             ranges = []
             for level in levels:
