@@ -1,4 +1,5 @@
 import os
+import pytz
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -7,6 +8,8 @@ from src.service.service import get_ticks
 from src.service.service import get_ticks
 from src.config.config import TEMP_FOLDER
 from src.schemas.schemas import FindSupportResistanceResponse, GetLevelsRequest, StockLevelsContext, SupportResistanceResult, YFPeriod, YFInterval
+
+IST = pytz.timezone('Asia/Kolkata')
 
 def round_to_nearest(value, decimal_places):
     if decimal_places == 0:
@@ -31,13 +34,14 @@ def find_support_resistance(request: GetLevelsRequest):
 
     period = request.period.value
     interval = request.interval.value
-    date = datetime.now().strftime('%d-%m-%Y').replace('-', '_')
+    date_time_ist = datetime.now(IST).strftime('%d-%m-%Y %H:%M:%S')
+    date = datetime.now(IST).strftime('%d-%m-%Y').replace('-', '_')
 
     if not os.path.isdir(temp_folder):
         os.mkdir(temp_folder)
 
     for index, symbol in enumerate(symbols):
-        print(f"Started analysing stock {symbol} and count {index + 1}")
+        print(f"Started analysing stock {symbol} and count {index + 1} : {date_time_ist}")
         temp_file = os.path.join(temp_folder, f"{symbol}_{period}_{interval}_{date}.csv")
 
         if os.path.isfile(temp_file):
@@ -48,6 +52,7 @@ def find_support_resistance(request: GetLevelsRequest):
                 data.to_csv(temp_file)
 
         if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
+            print(f"Skipping analysing stock {symbol} and count {index + 1} : {date_time_ist}")
             continue  # Skip this symbol
 
         # # Calculate percentage movement over a rolling window of 15 trading days
@@ -95,10 +100,25 @@ def find_support_resistance(request: GetLevelsRequest):
 
         def create_ranges(levels):
             def get_range_diff(value):
-                base_diff = 2
-                increment_per_50 = 0.04  # Define how much the range should increase per 50-point increase in value
-                multiplier = value // 50
-                return base_diff + (increment_per_50 * multiplier * 50)
+                if value < 50:
+                    return 2
+                elif value < 100:
+                    return 5
+                elif value < 500:
+                    return 20
+                elif value < 1000:
+                    return 50
+                elif value < 5000:
+                    return 100
+                elif value < 10000:
+                    return 200
+                else:
+                    return 500
+
+                # base_diff = 2
+                # increment_per_50 = 0.04  # Define how much the range should increase per 50-point increase in value
+                # multiplier = value // 50
+                # return base_diff + (increment_per_50 * multiplier * 50)
 
             ranges = []
             for level in levels:
@@ -135,11 +155,11 @@ def find_support_resistance(request: GetLevelsRequest):
         at_resistance = bool(resistance_level_details)
         
         if at_support or at_resistance:
+            symbol = symbol.replace('.NS', '')
             if at_support:
-                print(f"{symbol} is at support")
+                print(f"{symbol} is at support : {date_time_ist}")
             if at_resistance :
-                print(f"{symbol} is at resistance")
-
+                print(f"{symbol} is at resistance : {date_time_ist}")
             results[symbol] = SupportResistanceResult(
                 support_count=sum(1 for low, high in filtered_support_ranges if low <= prev_close <= high),
                 resistance_count=sum(1 for low, high in filtered_resistance_ranges if low <= prev_close <= high),
