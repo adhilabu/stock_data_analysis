@@ -44,16 +44,22 @@ def find_support_resistance(request: GetLevelsRequest):
         print(f"Started analysing stock {symbol} and count {index + 1} : {date_time_ist}")
         temp_file = os.path.join(temp_folder, f"{symbol}_{period}_{interval}_{date}.csv")
 
-        if os.path.isfile(temp_file):
-            data = pd.read_csv(temp_file, index_col=0, parse_dates=True)
-        else:
-            data = yf.download(symbol, period=period, interval=interval)
-            if not data.empty:
-                data.to_csv(temp_file)
+        try:
+            if os.path.isfile(temp_file):
+                    data = pd.read_csv(temp_file, index_col=0, parse_dates=True)
+            else:
+                data = yf.download(symbol, period=period, interval=interval)
+                if not data.empty:
+                    data.to_csv(temp_file)
 
-        if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
-            print(f"Skipping analysing stock {symbol} and count {index + 1} : {date_time_ist}")
-            continue  # Skip this symbol
+            if data.empty or len(data) < 2 or data.iloc[-1]['Close'] < 50:
+                print(f"Skipping analysing stock {symbol} and count {index + 1} : {date_time_ist}")
+                continue  # Skip this symbol
+
+        except Exception as e:
+            # Handle CSV parsing errors
+            print(f"Error reading CSV file {temp_file}: {e}")
+            continue
 
         # # Calculate percentage movement over a rolling window of 15 trading days
         # data['Pct_Change'] = data['Close'].pct_change(periods=15) * 100
