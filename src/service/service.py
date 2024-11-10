@@ -4,6 +4,9 @@ from src.ml.ml_service import analyse_and_predict_symbol_data, analyze_and_predi
 import os
 import requests
 import numpy as np
+from datetime import datetime, timedelta
+import pickle
+from typing import Any
 
 async def filter_symbol_df(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -74,30 +77,53 @@ async def analyze_symbol_df_v3(req: StockDayAnalysisRequest, symbol_df: pd.DataF
     )
     return response
 
+# Define the path for the cache file and the data file
+CACHE_FILE = "symbols_cache.pkl"
+SYMBOLS_FILE = "nse_equities.csv"
+CACHE_EXPIRY = timedelta(days=1)  # Cache expires after 1 day
 
-def get_ticks(
-) -> AllSymbolsResponse:
+def is_cache_valid() -> bool:
+    """Check if the cache file exists and is still valid based on expiry time."""
+    if os.path.isfile(CACHE_FILE):
+        cache_age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(CACHE_FILE))
+        return cache_age < CACHE_EXPIRY
+    return False
+
+def load_cache() -> Any:
+    """Load data from cache file."""
+    with open(CACHE_FILE, "rb") as f:
+        return pickle.load(f)
+
+def save_cache(data: Any) -> None:
+    """Save data to cache file."""
+    with open(CACHE_FILE, "wb") as f:
+        pickle.dump(data, f)
+
+def get_ticks() -> AllSymbolsResponse:
     """
-    Function for fetching tick data
+    Function for fetching tick data, with caching to avoid redundant downloads.
     """
+    # Return cached data if available and valid
+    if is_cache_valid():
+        return load_cache()
+    
+    # Ensure directory exists for data files
     if not os.path.isdir("yf_data"):
         os.mkdir("yf_data")
 
-    symbols_file = r"nse_equities.csv"
     url = "https://archives.nseindia.com/content/equities/EQUITY_L.csv"
-
-    # Downloads scripts csv if it's not there you can delete the nse_equities.csv
-    # file after new IPOs to update the file
-    if not os.path.isfile(symbols_file):
+    # Download the symbols file if it doesn't exist
+    if not os.path.isfile(SYMBOLS_FILE):
         response = requests.get(url)
-        with open(symbols_file, "wb") as f:
+        with open(SYMBOLS_FILE, "wb") as f:
             f.write(response.content)
-    equities = pd.read_csv(symbols_file)
+    
+    # Load equities data and build symbols map
+    equities = pd.read_csv(SYMBOLS_FILE)
     equities["SYMBOL_NS"] = equities["SYMBOL"].apply(lambda x: x + ".NS")
     symbols_map = dict(zip(equities['SYMBOL_NS'], equities['NAME OF COMPANY']))
 
-
-    # YF adds a .NS suffix to NSE scripts
+    # Add extra symbols to symbols map
     extras = {
         # indices
         '^NSEI': 'Nifty 50',
@@ -126,11 +152,11 @@ def get_ticks(
     symbols_map.update(extras)
     symbols_map = [{"name": value, "value": key} for key, value in symbols_map.items()]
     symbols_map = sorted(symbols_map, key=lambda x: x['name'])
-    all_symbols_response = AllSymbolsResponse(
-        symbols_map=symbols_map
-    )
+    
+    all_symbols_response = AllSymbolsResponse(symbols_map=symbols_map)
+    save_cache(all_symbols_response)
+    
     return all_symbols_response
-
 
 async def analyze_options(req: StockDayAnalysisRequest, symbol_df: pd.DataFrame) -> StockDayAnalysisV3Response:
     """
